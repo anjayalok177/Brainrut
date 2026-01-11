@@ -55,7 +55,7 @@ local function teleportTo(position)
 end
 
 local function holdE(duration)
-	duration = duration or 1.0
+	duration = duration or 2.0
 	VirtualInputManager:SendKeyEvent(true, Enum.KeyCode.E, false, game)
 	task.wait(duration)
 	VirtualInputManager:SendKeyEvent(false, Enum.KeyCode.E, false, game)
@@ -153,7 +153,7 @@ TeleportGroupBox:AddButton({
 			Library:Notify("Teleported to Celestial Zone!", 2)
 		end
 	end,
-	Tooltip = "Teleports you to the Celestial Zone (2451, 3, -7)",
+	Tooltip = "Teleports you to the Celestial Zone (2666, 3, -7)",
 })
 
 -- ========================================
