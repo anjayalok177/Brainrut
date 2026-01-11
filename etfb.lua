@@ -1,160 +1,368 @@
--- ========================================
--- INTRO ANIMATION WITH YOUR IMAGE
--- ========================================
-
+-- ======================
+-- Intro animation
+-- ======================
 local function createIntroAnimation()
     local TweenService = game:GetService("TweenService")
+    local SoundService = game:GetService("SoundService")
     
     local screenGui = Instance.new("ScreenGui")
     screenGui.Name = "IntroScreen"
     screenGui.ResetOnSpawn = false
     screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+    screenGui.IgnoreGuiInset = true
     screenGui.Parent = game:GetService("CoreGui")
     
-    -- Background
+    -- Create sounds
+    local laserSound = Instance.new("Sound")
+    laserSound.SoundId = "rbxassetid://9057675920"
+    laserSound.Volume = 0.5
+    laserSound.Parent = SoundService
+    
+    local explosionSound = Instance.new("Sound")
+    explosionSound.SoundId = "rbxassetid://112797079504478"
+    explosionSound.Volume = 0.6
+    explosionSound.Parent = SoundService
+    
+    -- Animated Background with gradient
     local background = Instance.new("Frame")
     background.Size = UDim2.new(1, 0, 1, 0)
-    background.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
+    background.Position = UDim2.new(0, 0, 0, 0)
+    background.BackgroundColor3 = Color3.fromRGB(20, 20, 30)
     background.BorderSizePixel = 0
     background.Parent = screenGui
     
-    -- Main Image Frame
+    -- Gradient background
+    local gradient = Instance.new("UIGradient")
+    gradient.Color = ColorSequence.new{
+        ColorSequenceKeypoint.new(0, Color3.fromRGB(30, 20, 50)),
+        ColorSequenceKeypoint.new(0.5, Color3.fromRGB(15, 10, 30)),
+        ColorSequenceKeypoint.new(1, Color3.fromRGB(50, 30, 70))
+    }
+    gradient.Rotation = 45
+    gradient.Parent = background
+    
+    -- Animated particles in background
+    for i = 1, 20 do
+        local bgParticle = Instance.new("Frame")
+        bgParticle.Size = UDim2.new(0, math.random(3, 8), 0, math.random(3, 8))
+        bgParticle.Position = UDim2.new(math.random(), 0, math.random(), 0)
+        bgParticle.BackgroundColor3 = Color3.fromRGB(138, 43, 226)
+        bgParticle.BackgroundTransparency = math.random(50, 80) / 100
+        bgParticle.BorderSizePixel = 0
+        bgParticle.Parent = background
+        
+        local bgCorner = Instance.new("UICorner")
+        bgCorner.CornerRadius = UDim.new(1, 0)
+        bgCorner.Parent = bgParticle
+        
+        -- Float animation
+        task.spawn(function()
+            while bgParticle.Parent do
+                local floatAnim = TweenService:Create(
+                    bgParticle,
+                    TweenInfo.new(math.random(20, 40) / 10, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut),
+                    {
+                        Position = UDim2.new(
+                            bgParticle.Position.X.Scale + math.random(-10, 10) / 100,
+                            0,
+                            bgParticle.Position.Y.Scale + math.random(-10, 10) / 100,
+                            0
+                        )
+                    }
+                )
+                floatAnim:Play()
+                task.wait(math.random(20, 40) / 10)
+            end
+        end)
+    end
+    
+    -- Main Image Frame (Square) - Centered
     local imageFrame = Instance.new("ImageLabel")
-    imageFrame.Size = UDim2.new(0, 300, 0, 300)
-    imageFrame.Position = UDim2.new(0.5, -150, 1.2, 0)
+    imageFrame.Size = UDim2.new(0, 220, 0, 220)
+    imageFrame.Position = UDim2.new(0.5, 0, 1.2, 0)
+    imageFrame.AnchorPoint = Vector2.new(0.5, 0.5)
     imageFrame.BackgroundTransparency = 1
     imageFrame.Image = "rbxassetid://110843044052526"
     imageFrame.ScaleType = Enum.ScaleType.Fit
     imageFrame.Parent = background
     
-    -- Circle border
-    local border = Instance.new("UICorner")
-    border.CornerRadius = UDim.new(1, 0)
-    border.Parent = imageFrame
+    -- Rounded corners
+    local corner = Instance.new("UICorner")
+    corner.CornerRadius = UDim.new(0, 25)
+    corner.Parent = imageFrame
     
-    -- Title text
+    -- Glow effect around image
+    local glow = Instance.new("ImageLabel")
+    glow.Size = UDim2.new(1.3, 0, 1.3, 0)
+    glow.Position = UDim2.new(0.5, 0, 0.5, 0)
+    glow.AnchorPoint = Vector2.new(0.5, 0.5)
+    glow.BackgroundTransparency = 1
+    glow.Image = "rbxassetid://5028857084"
+    glow.ImageColor3 = Color3.fromRGB(138, 43, 226)
+    glow.ImageTransparency = 0.5
+    glow.Parent = imageFrame
+    
+    -- Title text - MOVED MUCH LOWER
     local title = Instance.new("TextLabel")
-    title.Size = UDim2.new(0, 400, 0, 60)
-    title.Position = UDim2.new(0.5, -200, 0.7, 0)
+    title.Size = UDim2.new(0, 500, 0, 70)
+    title.Position = UDim2.new(0.5, 0, 0.78, 0)
+    title.AnchorPoint = Vector2.new(0.5, 0.5)
     title.BackgroundTransparency = 1
-    title.Text = "BRAINROT HUB"
+    title.Text = "YI DA MU SAKE"
     title.TextColor3 = Color3.fromRGB(255, 255, 255)
-    title.TextSize = 42
+    title.TextSize = 48
     title.Font = Enum.Font.GothamBold
     title.TextTransparency = 1
-    title.TextStrokeTransparency = 0.8
+    title.TextStrokeTransparency = 0.5
     title.TextStrokeColor3 = Color3.fromRGB(138, 43, 226)
     title.Parent = background
     
-    -- Subtitle
-    local subtitle = Instance.new("TextLabel")
-    subtitle.Size = UDim2.new(0, 400, 0, 30)
-    subtitle.Position = UDim2.new(0.5, -200, 0.75, 0)
-    subtitle.BackgroundTransparency = 1
-    subtitle.Text = "v2.1 by sir lewis"
-    subtitle.TextColor3 = Color3.fromRGB(180, 180, 180)
-    subtitle.TextSize = 18
-    subtitle.Font = Enum.Font.Gotham
-    subtitle.TextTransparency = 1
-    subtitle.Parent = background
-    
-    -- ANIMATION 1: Slide up from bottom
+    -- ANIMATION 1: Slide up from bottom with smooth BOUNCE effect (2.5 SECONDS)
     local slideUp = TweenService:Create(
         imageFrame,
-        TweenInfo.new(1, Enum.EasingStyle.Back, Enum.EasingDirection.Out),
-        {Position = UDim2.new(0.5, -150, 0.35, -150)}
+        TweenInfo.new(2.5, Enum.EasingStyle.Elastic, Enum.EasingDirection.Out),
+        {Position = UDim2.new(0.5, 0, 0.4, 0)}
     )
     
     -- ANIMATION 2: Fade in text
     local fadeInTitle = TweenService:Create(
         title,
-        TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+        TweenInfo.new(0.6, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
         {TextTransparency = 0}
     )
     
-    local fadeInSubtitle = TweenService:Create(
-        subtitle,
-        TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
-        {TextTransparency = 0.3}
-    )
-    
-    -- Start animations
+    -- Start animations + LASER SOUND
+    laserSound:Play()
     slideUp:Play()
-    task.wait(0.4)
+    task.wait(1.2)
     fadeInTitle:Play()
-    fadeInSubtitle:Play()
     
-    -- Wait before shatter
-    task.wait(1.5)
+    -- Wait for bounce to settle completely
+    task.wait(2.0)
     
-    -- SHATTER EFFECT
-    local function createShatterParticles()
-        local particles = {}
-        local rows, cols = 5, 5
-        local pieceWidth = 300 / cols
-        local pieceHeight = 300 / rows
+    -- Calculate distance from center for OUTSIDE-IN shatter
+    local function getDistanceFromCenter(row, col, gridSize)
+        local centerRow = (gridSize - 1) / 2
+        local centerCol = (gridSize - 1) / 2
+        local distRow = row - centerRow
+        local distCol = col - centerCol
+        return math.sqrt(distRow * distRow + distCol * distCol)
+    end
+    
+    -- SHATTER FROM OUTSIDE TO INSIDE
+    local function createShatteredPieces()
+        local pieces = {}
+        local gridSize = 6  -- 6x6 grid = 36 pieces
+        local imageSize = 220
+        local pieceSize = imageSize / gridSize
+        local originalImageSize = 420
         
-        for row = 0, rows - 1 do
-            for col = 0, cols - 1 do
+        -- Store pieces with their distance from center
+        local piecesWithDistance = {}
+        
+        for row = 0, gridSize - 1 do
+            for col = 0, gridSize - 1 do
                 local piece = Instance.new("ImageLabel")
-                piece.Size = UDim2.new(0, pieceWidth, 0, pieceHeight)
+                
+                piece.Size = UDim2.new(0, pieceSize, 0, pieceSize)
                 piece.Position = UDim2.new(
-                    0.5, -150 + (col * pieceWidth),
-                    0.35, -150 + (row * pieceHeight)
+                    0.5, (col * pieceSize) - (imageSize / 2),
+                    0.4, (row * pieceSize) - (imageSize / 2)
                 )
+                piece.AnchorPoint = Vector2.new(0, 0)
+                
                 piece.BackgroundTransparency = 1
                 piece.Image = "rbxassetid://110843044052526"
-                piece.ImageRectSize = Vector2.new(300, 300)
-                piece.ImageRectOffset = Vector2.new(col * pieceWidth, row * pieceHeight)
                 piece.ScaleType = Enum.ScaleType.Crop
+                piece.ZIndex = 5
+                
+                -- Crop to specific part
+                local rectWidth = originalImageSize / gridSize
+                local rectHeight = originalImageSize / gridSize
+                
+                piece.ImageRectSize = Vector2.new(rectWidth, rectHeight)
+                piece.ImageRectOffset = Vector2.new(col * rectWidth, row * rectHeight)
+                
                 piece.Parent = background
                 
-                local pieceCorner = Instance.new("UICorner")
-                pieceCorner.CornerRadius = UDim.new(0.2, 0)
-                pieceCorner.Parent = piece
+                local pCorner = Instance.new("UICorner")
+                pCorner.CornerRadius = UDim.new(0, math.random(2, 6))
+                pCorner.Parent = piece
                 
-                table.insert(particles, piece)
+                -- Calculate distance from center
+                local distance = getDistanceFromCenter(row, col, gridSize)
+                
+                table.insert(piecesWithDistance, {
+                    piece = piece,
+                    distance = distance
+                })
             end
+        end
+        
+        -- Sort by distance (furthest first = outside first)
+        table.sort(piecesWithDistance, function(a, b)
+            return a.distance > b.distance
+        end)
+        
+        return piecesWithDistance
+    end
+    
+    -- TOTEM PARTICLES (spawn with image pieces!)
+    local function createTotemParticles()
+        local particles = {}
+        
+        for i = 1, 45 do
+            local particle = Instance.new("Frame")
+            local size = math.random(10, 22)
+            particle.Size = UDim2.new(0, size, 0, size)
+            particle.Position = UDim2.new(0.5, 0, 0.4, 0)
+            particle.AnchorPoint = Vector2.new(0.5, 0.5)
+            
+            -- Totem colors: white, yellow, gold
+            local colorChoice = math.random(1, 4)
+            if colorChoice == 1 then
+                particle.BackgroundColor3 = Color3.fromRGB(255, 255, 255) -- White
+            elseif colorChoice == 2 then
+                particle.BackgroundColor3 = Color3.fromRGB(255, 255, 120) -- Yellow
+            elseif colorChoice == 3 then
+                particle.BackgroundColor3 = Color3.fromRGB(255, 215, 0) -- Gold
+            else
+                particle.BackgroundColor3 = Color3.fromRGB(138, 43, 226) -- Purple accent
+            end
+            
+            particle.BorderSizePixel = 0
+            particle.ZIndex = 6
+            particle.Parent = background
+            
+            local pCorner = Instance.new("UICorner")
+            pCorner.CornerRadius = UDim.new(0.35, 0)
+            pCorner.Parent = particle
+            
+            table.insert(particles, particle)
         end
         
         return particles
     end
     
+    -- White flash
+    local flash = Instance.new("Frame")
+    flash.Size = UDim2.new(1, 0, 1, 0)
+    flash.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    flash.BorderSizePixel = 0
+    flash.BackgroundTransparency = 1
+    flash.ZIndex = 10
+    flash.Parent = background
+    
+    -- INSTANT FLASH (like totem pop)
+    local flashIn = TweenService:Create(
+        flash,
+        TweenInfo.new(0.08, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+        {BackgroundTransparency = 0.1}
+    )
+    
+    local flashOut = TweenService:Create(
+        flash,
+        TweenInfo.new(0.6, Enum.EasingStyle.Quad, Enum.EasingDirection.In),
+        {BackgroundTransparency = 1}
+    )
+    
+    -- Hide original
     imageFrame.Visible = false
+    glow.Visible = false
     
-    local pieces = createShatterParticles()
+    -- EXPLOSION SOUND!
+    explosionSound:Play()
     
-    for i, piece in ipairs(pieces) do
-        local randomX = math.random(-600, 600)
-        local randomY = math.random(-600, 600)
-        local randomRotation = math.random(-360, 360)
+    -- FLASH!
+    flashIn:Play()
+    flashIn.Completed:Connect(function()
+        flashOut:Play()
+    end)
+    
+    -- Create particles
+    local shatteredPieces = createShatteredPieces()
+    local totemParts = createTotemParticles()
+    
+    -- SCATTER FROM OUTSIDE TO INSIDE (shockwave effect!)
+    -- Image pieces and totem particles fly out TOGETHER
+    
+    for i, pieceData in ipairs(shatteredPieces) do
+        local piece = pieceData.piece
+        
+        local angle = math.random(0, 360)
+        local rad = math.rad(angle)
+        local distance = math.random(400, 800)
+        
+        local targetX = math.cos(rad) * distance
+        local targetY = math.sin(rad) * distance + math.random(100, 300)
         
         local scatter = TweenService:Create(
             piece,
-            TweenInfo.new(0.9, Enum.EasingStyle.Quad, Enum.EasingDirection.In),
+            TweenInfo.new(
+                2.0, -- PARTICLE DURATION: 2 SECONDS
+                Enum.EasingStyle.Quad,
+                Enum.EasingDirection.Out
+            ),
             {
-                Position = UDim2.new(piece.Position.X.Scale, piece.Position.X.Offset + randomX, 
-                                   piece.Position.Y.Scale, piece.Position.Y.Offset + randomY),
-                Rotation = randomRotation,
-                ImageTransparency = 1
+                Position = UDim2.new(piece.Position.X.Scale, piece.Position.X.Offset + targetX, 
+                                   piece.Position.Y.Scale, piece.Position.Y.Offset + targetY),
+                ImageTransparency = 1,
+                Rotation = math.random(-450, 450),
+                Size = UDim2.new(0, piece.Size.X.Offset * 0.3, 0, piece.Size.Y.Offset * 0.3)
             }
         )
         
         scatter:Play()
-        task.wait(0.025)
+        
+        -- Spawn totem particle alongside some image pieces
+        if i <= #totemParts then
+            local totemParticle = totemParts[i]
+            
+            local tAngle = math.random(0, 360)
+            local tRad = math.rad(tAngle)
+            local tDistance = math.random(350, 750)
+            
+            local tTargetX = math.cos(tRad) * tDistance
+            local tTargetY = math.sin(tRad) * tDistance + math.random(120, 280)
+            
+            local totemScatter = TweenService:Create(
+                totemParticle,
+                TweenInfo.new(
+                    2.0, -- PARTICLE DURATION: 2 SECONDS
+                    Enum.EasingStyle.Quad,
+                    Enum.EasingDirection.Out
+                ),
+                {
+                    Position = UDim2.new(0.5, tTargetX, 0.4, tTargetY),
+                    BackgroundTransparency = 1,
+                    Rotation = math.random(-280, 280),
+                    Size = UDim2.new(0, totemParticle.Size.X.Offset * 0.25, 0, totemParticle.Size.Y.Offset * 0.25)
+                }
+            )
+            
+            totemScatter:Play()
+        end
+        
+        -- DELAY based on distance (outside pieces go first!)
+        -- Smaller delay = faster shockwave effect
+        task.wait(0.004)
     end
     
-    task.wait(0.4)
+    -- Fade out (wait longer for particles to finish)
+    task.wait(1.5)
     
     local fadeOutTitle = TweenService:Create(title, TweenInfo.new(0.5), {TextTransparency = 1})
-    local fadeOutSubtitle = TweenService:Create(subtitle, TweenInfo.new(0.5), {TextTransparency = 1})
     local fadeOutBg = TweenService:Create(background, TweenInfo.new(0.5), {BackgroundTransparency = 1})
     
     fadeOutTitle:Play()
-    fadeOutSubtitle:Play()
     fadeOutBg:Play()
     
     task.wait(0.6)
+    
+    -- Clean up sounds
+    laserSound:Destroy()
+    explosionSound:Destroy()
+    
     screenGui:Destroy()
 end
 
