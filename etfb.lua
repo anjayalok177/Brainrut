@@ -146,6 +146,16 @@ TeleportGroupBox:AddButton({
 	Tooltip = "Teleports you to the Secret Zone (2451, 3, -7)",
 })
 
+TeleportGroupBox:AddButton({
+	Text = "Teleport to Celestial Zone",
+	Func = function()
+		if teleportTo(secretZonePosition) then
+			Library:Notify("Teleported to Celestial Zone!", 2)
+		end
+	end,
+	Tooltip = "Teleports you to the Celestial Zone (2451, 3, -7)",
+})
+
 -- ========================================
 -- BRAINROT TELEPORT
 -- ========================================
@@ -311,7 +321,7 @@ task.spawn(function()
 					if pos then
 						if teleportTo(pos + Vector3.new(0, 3, 0)) then
 							task.wait(0.3)
-							holdE(1)
+							holdE(2)
 							task.wait(delay)
 							teleportTo(basePosition)
 							task.wait(0.5)
@@ -485,13 +495,13 @@ task.spawn(function()
 				if char then
 					local humanoid = char:FindFirstChild("Humanoid")
 					if humanoid then
-						humanoid.MaxHealth = 999999
-						humanoid.Health = 999999
+						humanoid.MaxHealth = 9999999999
+						humanoid.Health = 9999999999
 						
 						humanoid.HealthChanged:Connect(function(health)
 							if Toggles.AntiWave and Toggles.AntiWave.Value then
-								if health < 999999 then
-									humanoid.Health = 999999
+								if health < 9999999999 then
+									humanoid.Health = 9999999999
 								end
 							end
 						end)
@@ -532,4 +542,4 @@ ThemeManager:ApplyToTab(Tabs["UI Settings"])
 
 SaveManager:LoadAutoloadConfig()
 
-Library:Notify("Brainrot Hub v2.1 loaded!", 3)
+Library:Notify("Yi Da Mu Sake v2.1 loaded!", 3)
