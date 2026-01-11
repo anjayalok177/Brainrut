@@ -1,3 +1,169 @@
+-- ========================================
+-- INTRO ANIMATION WITH YOUR IMAGE
+-- ========================================
+
+local function createIntroAnimation()
+    local TweenService = game:GetService("TweenService")
+    
+    local screenGui = Instance.new("ScreenGui")
+    screenGui.Name = "IntroScreen"
+    screenGui.ResetOnSpawn = false
+    screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+    screenGui.Parent = game:GetService("CoreGui")
+    
+    -- Background
+    local background = Instance.new("Frame")
+    background.Size = UDim2.new(1, 0, 1, 0)
+    background.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
+    background.BorderSizePixel = 0
+    background.Parent = screenGui
+    
+    -- Main Image Frame
+    local imageFrame = Instance.new("ImageLabel")
+    imageFrame.Size = UDim2.new(0, 300, 0, 300)
+    imageFrame.Position = UDim2.new(0.5, -150, 1.2, 0)
+    imageFrame.BackgroundTransparency = 1
+    imageFrame.Image = "rbxassetid://110843044052526"
+    imageFrame.ScaleType = Enum.ScaleType.Fit
+    imageFrame.Parent = background
+    
+    -- Circle border
+    local border = Instance.new("UICorner")
+    border.CornerRadius = UDim.new(1, 0)
+    border.Parent = imageFrame
+    
+    -- Title text
+    local title = Instance.new("TextLabel")
+    title.Size = UDim2.new(0, 400, 0, 60)
+    title.Position = UDim2.new(0.5, -200, 0.7, 0)
+    title.BackgroundTransparency = 1
+    title.Text = "BRAINROT HUB"
+    title.TextColor3 = Color3.fromRGB(255, 255, 255)
+    title.TextSize = 42
+    title.Font = Enum.Font.GothamBold
+    title.TextTransparency = 1
+    title.TextStrokeTransparency = 0.8
+    title.TextStrokeColor3 = Color3.fromRGB(138, 43, 226)
+    title.Parent = background
+    
+    -- Subtitle
+    local subtitle = Instance.new("TextLabel")
+    subtitle.Size = UDim2.new(0, 400, 0, 30)
+    subtitle.Position = UDim2.new(0.5, -200, 0.75, 0)
+    subtitle.BackgroundTransparency = 1
+    subtitle.Text = "v2.1 by sir lewis"
+    subtitle.TextColor3 = Color3.fromRGB(180, 180, 180)
+    subtitle.TextSize = 18
+    subtitle.Font = Enum.Font.Gotham
+    subtitle.TextTransparency = 1
+    subtitle.Parent = background
+    
+    -- ANIMATION 1: Slide up from bottom
+    local slideUp = TweenService:Create(
+        imageFrame,
+        TweenInfo.new(1, Enum.EasingStyle.Back, Enum.EasingDirection.Out),
+        {Position = UDim2.new(0.5, -150, 0.35, -150)}
+    )
+    
+    -- ANIMATION 2: Fade in text
+    local fadeInTitle = TweenService:Create(
+        title,
+        TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+        {TextTransparency = 0}
+    )
+    
+    local fadeInSubtitle = TweenService:Create(
+        subtitle,
+        TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+        {TextTransparency = 0.3}
+    )
+    
+    -- Start animations
+    slideUp:Play()
+    task.wait(0.4)
+    fadeInTitle:Play()
+    fadeInSubtitle:Play()
+    
+    -- Wait before shatter
+    task.wait(1.5)
+    
+    -- SHATTER EFFECT
+    local function createShatterParticles()
+        local particles = {}
+        local rows, cols = 5, 5
+        local pieceWidth = 300 / cols
+        local pieceHeight = 300 / rows
+        
+        for row = 0, rows - 1 do
+            for col = 0, cols - 1 do
+                local piece = Instance.new("ImageLabel")
+                piece.Size = UDim2.new(0, pieceWidth, 0, pieceHeight)
+                piece.Position = UDim2.new(
+                    0.5, -150 + (col * pieceWidth),
+                    0.35, -150 + (row * pieceHeight)
+                )
+                piece.BackgroundTransparency = 1
+                piece.Image = "rbxassetid://110843044052526"
+                piece.ImageRectSize = Vector2.new(300, 300)
+                piece.ImageRectOffset = Vector2.new(col * pieceWidth, row * pieceHeight)
+                piece.ScaleType = Enum.ScaleType.Crop
+                piece.Parent = background
+                
+                local pieceCorner = Instance.new("UICorner")
+                pieceCorner.CornerRadius = UDim.new(0.2, 0)
+                pieceCorner.Parent = piece
+                
+                table.insert(particles, piece)
+            end
+        end
+        
+        return particles
+    end
+    
+    imageFrame.Visible = false
+    
+    local pieces = createShatterParticles()
+    
+    for i, piece in ipairs(pieces) do
+        local randomX = math.random(-600, 600)
+        local randomY = math.random(-600, 600)
+        local randomRotation = math.random(-360, 360)
+        
+        local scatter = TweenService:Create(
+            piece,
+            TweenInfo.new(0.9, Enum.EasingStyle.Quad, Enum.EasingDirection.In),
+            {
+                Position = UDim2.new(piece.Position.X.Scale, piece.Position.X.Offset + randomX, 
+                                   piece.Position.Y.Scale, piece.Position.Y.Offset + randomY),
+                Rotation = randomRotation,
+                ImageTransparency = 1
+            }
+        )
+        
+        scatter:Play()
+        task.wait(0.025)
+    end
+    
+    task.wait(0.4)
+    
+    local fadeOutTitle = TweenService:Create(title, TweenInfo.new(0.5), {TextTransparency = 1})
+    local fadeOutSubtitle = TweenService:Create(subtitle, TweenInfo.new(0.5), {TextTransparency = 1})
+    local fadeOutBg = TweenService:Create(background, TweenInfo.new(0.5), {BackgroundTransparency = 1})
+    
+    fadeOutTitle:Play()
+    fadeOutSubtitle:Play()
+    fadeOutBg:Play()
+    
+    task.wait(0.6)
+    screenGui:Destroy()
+end
+
+createIntroAnimation()
+
+-- ========================================
+-- SCRIPT KAMU MULAI DI BAWAH INI
+-- ========================================
+
 -- Obsidian UI Integration - Yok Main Yok
 local repo = "https://raw.githubusercontent.com/deividcomsono/Obsidian/main/"
 local Library = loadstring(game:HttpGet(repo .. "Library.lua"))()
