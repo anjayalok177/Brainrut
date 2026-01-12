@@ -527,7 +527,7 @@ TeleportGroupBox:AddButton({
 			Library:Notify("Teleported to Celestial Zone!", 2)
 		end
 	end,
-	Tooltip = "Teleports you to the Celestial Zone (2666, 3, -7)",
+	Tooltip = "Teleports you to the Celestial Zone (2900, 3, -7)",
 })
 
 -- ========================================
