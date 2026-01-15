@@ -409,6 +409,7 @@ local RunService = game:GetService("RunService")
 
 local basePosition = Vector3.new(117, 3, -1)
 local secretZonePosition = Vector3.new(2451, 3, -7)
+local celestialZonePosition = Vector3.new(3100, 3, -7)
 
 local function teleportTo(position)
 	local char = player.Character
@@ -428,18 +429,31 @@ local function teleportTo(position)
 	return true
 end
 
-local function holdE(duration)
-	duration = duration or 2.0
-	VirtualInputManager:SendKeyEvent(true, Enum.KeyCode.E, false, game)
-	task.wait(duration)
-	VirtualInputManager:SendKeyEvent(false, Enum.KeyCode.E, false, game)
+local function grabBrainrot(brainrot)
+	if not brainrot then return false end
+	
+	local prompt = nil
+	
+	if brainrot:IsA("Model") then
+		prompt = brainrot:FindFirstChildWhichIsA("ProximityPrompt", true)
+	elseif brainrot:IsA("BasePart") then
+		prompt = brainrot:FindFirstChildWhichIsA("ProximityPrompt")
+	end
+	
+	if prompt then
+		fireproximityprompt(prompt)
+		return true
+	end
+	
+	return false
 end
 
 local function getBrainrots()
 	local brainrots = {
 		Legendary = {},
 		Mythical = {},
-		Secret = {}
+		Secret = {},
+        Celestial = {} 
 	}
 	
 	local activeBrainrots = workspace:FindFirstChild("ActiveBrainrots")
@@ -470,6 +484,15 @@ local function getBrainrots()
 		for _, brainrot in pairs(secret:GetChildren()) do
 			if brainrot:IsA("Model") or brainrot:IsA("BasePart") then
 				table.insert(brainrots.Secret, brainrot)
+			end
+		end
+	end
+	
+    local secret = activeBrainrots:FindFirstChild("Celestial")
+	if secret then
+		for _, brainrot in pairs(celestial:GetChildren()) do
+			if brainrot:IsA("Model") or brainrot:IsA("BasePart") then
+				table.insert(brainrots.Celestial, brainrot)
 			end
 		end
 	end
@@ -523,11 +546,11 @@ TeleportGroupBox:AddButton({
 TeleportGroupBox:AddButton({
 	Text = "Teleport to Celestial Zone",
 	Func = function()
-		if teleportTo(secretZonePosition) then
+		if teleportTo(celestialZonePosition) then
 			Library:Notify("Teleported to Celestial Zone!", 2)
 		end
 	end,
-	Tooltip = "Teleports you to the Celestial Zone (2900, 3, -7)",
+	Tooltip = "Teleports you to the Celestial Zone (3100, 3, -7)",
 })
 
 -- ========================================
@@ -643,7 +666,7 @@ AutoFarmSettings:AddSlider("FarmDelay", {
 AutoFarmSettings:AddDivider()
 
 AutoFarmSettings:AddDropdown("AutoFarmRarity", {
-	Values = {"Legendary", "Mythical", "Secret"},
+	Values = {"Legendary", "Mythical", "Secret", "Celestial"},
 	Default = 1,
 	Multi = false,
 	Text = "Target Rarity",
@@ -694,12 +717,16 @@ task.spawn(function()
 					
 					if pos then
 						if teleportTo(pos + Vector3.new(0, 3, 0)) then
-							task.wait(0.3)
-							holdE(2)
+						task.wait(0.3)
+						
+						if grabBrainrot(brainrot) then
 							task.wait(delay)
 							teleportTo(basePosition)
 							task.wait(0.5)
+						else
+							Library:Notify("Failed to grab " .. brainrot.Name, 2)
 						end
+					end
 					end
 					
 					task.wait(0.5)
@@ -780,57 +807,63 @@ task.spawn(function()
 			if not bases then
 				collectStatusLabel:SetText("Status: Bases not found")
 				task.wait(3)
-				continue
-			end
-			
-			local totalCollected = 0
-			
-			for _, base in pairs(bases:GetChildren()) do
-				if not isAutoCollecting then break end
-				
-				-- Check ownership via Title GUI
-				local isOwner = false
-				local title = base:FindFirstChild("Title")
-				if title then
-					local titleGui = title:FindFirstChild("TitleGui")
-					if titleGui then
-						local frame = titleGui:FindFirstChild("Frame")
-						if frame then
-							local playerNameLabel = frame:FindFirstChild("PlayerName")
-							if playerNameLabel and playerNameLabel.Text == player.Name then
-								isOwner = true
-							end
-						end
-					end
-				end
-				
-				if isOwner then
-					local slots = base:FindFirstChild("Slots")
-					if slots then
-						for _, slot in pairs(slots:GetChildren()) do
-							if not isAutoCollecting then break end
-							
-							local collectPart = slot:FindFirstChild("Collect")
-							if collectPart then
-								local success = collectFromSlot(collectPart)
-								if success then
-									totalCollected = totalCollected + 1
-									collectStatusLabel:SetText("Status: " .. base.Name .. " - " .. slot.Name)
-								end
-								task.wait(0.1)
-							end
-						end
-					end
-				end
-			end
-			
-			if totalCollected > 0 then
-				collectStatusLabel:SetText("Status: Collected " .. totalCollected .. " slots ✓")
 			else
-				collectStatusLabel:SetText("Status: No slots to collect")
+				collectStatusLabel:SetText("Status: Collecting all slots...")
+				
+				local totalCollected = 0
+				local collectTasks = {}
+				
+				for _, base in pairs(bases:GetChildren()) do
+					if not isAutoCollecting then break end
+					
+					-- Check ownership via Title GUI
+					local isOwner = false
+					local title = base:FindFirstChild("Title")
+					if title then
+						local titleGui = title:FindFirstChild("TitleGui")
+						if titleGui then
+							local frame = titleGui:FindFirstChild("Frame")
+							if frame then
+								local playerNameLabel = frame:FindFirstChild("PlayerName")
+								if playerNameLabel and playerNameLabel.Text == player.Name then
+									isOwner = true
+								end
+							end
+						end
+					end
+					
+					if isOwner then
+						local slots = base:FindFirstChild("Slots")
+						if slots then
+							for _, slot in pairs(slots:GetChildren()) do
+								if not isAutoCollecting then break end
+								
+								local collectPart = slot:FindFirstChild("Collect")
+								if collectPart then
+									-- Spawn parallel task untuk setiap slot
+									table.insert(collectTasks, task.spawn(function()
+										local success = collectFromSlot(collectPart)
+										if success then
+											totalCollected = totalCollected + 1
+										end
+									end))
+								end
+							end
+						end
+					end
+				end
+				
+				-- Wait untuk semua tasks selesai
+				task.wait(0.3)
+				
+				if totalCollected > 0 then
+					collectStatusLabel:SetText("Status: Collected " .. totalCollected .. " slots instantly ✓")
+				else
+					collectStatusLabel:SetText("Status: No slots to collect")
+				end
+				
+				task.wait(2)
 			end
-			
-			task.wait(2)
 		else
 			collectStatusLabel:SetText("Status: Idle")
 		end
