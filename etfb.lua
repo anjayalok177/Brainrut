@@ -1,4 +1,7 @@
--- ====================
+-- Yi Da Mu Sake Script
+-- Modified by user request
+
+-- ======================
 -- Intro animation
 -- ======================
 local function createIntroAnimation()
@@ -347,12 +350,6 @@ local function createIntroAnimation()
 end
 
 createIntroAnimation()
-
--- ================= --
--- SCRIPT ABOVE HERE --
--- ================= --
--- Yi Da Mu Sake Script
--- Modified by user request
 
 local repo = "https://raw.githubusercontent.com/deividcomsono/Obsidian/main/"
 local Library = loadstring(game:HttpGet(repo .. "Library.lua"))()
@@ -784,7 +781,7 @@ TeleportGroup:AddButton({
     Text = "Open Waypoint UI",
     Func = function()
         loadstring([[
--- Waypoint Tween UI (Modified)
+-- Waypoint Tween UI (Modified - PC & Mobile Compatible)
 local waypoints = {
     {x = 125, y = 3, z = 0, name = "BASE"},
     {x = 205, y = -3, z = 0, name = "WP 1"},
@@ -804,6 +801,9 @@ local UserInputService = game:GetService("UserInputService")
 local currentWaypointIndex = 1
 local isTweening = false
 local tweenDuration = 3
+
+-- Detect platform
+local isMobile = UserInputService.TouchEnabled and not UserInputService.KeyboardEnabled
 
 local function detectNearestWaypoint()
     local character = player.Character
@@ -912,7 +912,7 @@ local TitleText = Instance.new("TextLabel")
 TitleText.Size = UDim2.new(1, -30, 1, 0)
 TitleText.Position = UDim2.new(0, 5, 0, 0)
 TitleText.BackgroundTransparency = 1
-TitleText.Text = "📍 Waypoint Tween"
+TitleText.Text = "📍 WP " .. (isMobile and "(Mobile)" or "(PC)")
 TitleText.TextColor3 = Color3.new(1, 1, 1)
 TitleText.Font = Enum.Font.GothamMedium
 TitleText.TextSize = 10
@@ -985,20 +985,20 @@ local DownBtn = Instance.new("TextButton")
 DownBtn.Size = UDim2.new(0.48, 0, 0, 40)
 DownBtn.Position = UDim2.new(0, 0, 0, 0)
 DownBtn.BackgroundColor3 = Color3.fromRGB(255, 150, 80)
-DownBtn.Text = "DOWN"
+DownBtn.Text = "DOWN" .. (isMobile and "" or "\n(PgDn)")
 DownBtn.TextColor3 = Color3.new(1, 1, 1)
 DownBtn.Font = Enum.Font.GothamMedium
-DownBtn.TextSize = 9
+DownBtn.TextSize = isMobile and 9 or 8
 DownBtn.Parent = ButtonContainer
 
 local UpBtn = Instance.new("TextButton")
 UpBtn.Size = UDim2.new(0.48, 0, 0, 40)
 UpBtn.Position = UDim2.new(0.52, 0, 0, 0)
 UpBtn.BackgroundColor3 = Color3.fromRGB(80, 150, 255)
-UpBtn.Text = "UP"
+UpBtn.Text = "UP" .. (isMobile and "" or "\n(PgUp)")
 UpBtn.TextColor3 = Color3.new(1, 1, 1)
 UpBtn.Font = Enum.Font.GothamMedium
-UpBtn.TextSize = 9
+UpBtn.TextSize = isMobile and 9 or 8
 UpBtn.Parent = ButtonContainer
 
 local BaseBtn = Instance.new("TextButton")
@@ -1017,6 +1017,7 @@ function updateWaypointDisplay()
 end
 
 CloseBtn.MouseButton1Click:Connect(function() ScreenGui:Destroy() end)
+
 DurationBox.FocusLost:Connect(function()
     local newDuration = tonumber(DurationBox.Text)
     if newDuration and newDuration >= 0.5 and newDuration <= 30 then
@@ -1041,6 +1042,21 @@ BaseBtn.MouseButton1Click:Connect(function()
     end
 end)
 
+-- Keyboard Controls (PC Only)
+if not isMobile then
+    UserInputService.InputBegan:Connect(function(input, processed)
+        if not processed and not isTweening then
+            if input.KeyCode == Enum.KeyCode.PageUp then
+                goToNextWaypoint()
+                updateWaypointDisplay()
+            elseif input.KeyCode == Enum.KeyCode.PageDown then
+                goToPreviousWaypoint()
+                updateWaypointDisplay()
+            end
+        end
+    end)
+end
+
 spawn(function()
     while ScreenGui.Parent do
         updateCurrentWaypointFromPosition()
@@ -1051,9 +1067,19 @@ end)
 
 updateCurrentWaypointFromPosition()
 updateWaypointDisplay()
+
+-- Show controls info
+if not isMobile then
+    print("✅ Waypoint UI - PC Mode")
+    print("⌨️ PageUp = Next Waypoint")
+    print("⌨️ PageDown = Previous Waypoint")
+else
+    print("✅ Waypoint UI - Mobile Mode")
+    print("📱 Use buttons to navigate")
+end
         ]])()
     end,
-    Tooltip = "Open separate waypoint teleport UI"
+    Tooltip = "Open separate waypoint teleport UI (PC & Mobile compatible)"
 })
 
 -- ============================================
@@ -1110,3 +1136,7 @@ SaveManager:LoadAutoloadConfig()
 
 -- Notification
 Library:Notify("Yi Da Mu Sake loaded successfully!", 3)
+print("✅ Yi Da Mu Sake Script Loaded!")
+print("📌 Auto Farm: Toggle features to start")
+print("🗺️ Teleportasi: Click button to open waypoint UI")
+print("💰 Sell: Click to sell equipped tool")
