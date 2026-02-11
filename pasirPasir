@@ -348,9 +348,6 @@ end
 
 createIntroAnimation()
 
--- ==================
--- SCRIPT BELOW HERE
--- ==================
 local Players = game:GetService("Players")
 local player = Players.LocalPlayer
 
@@ -409,6 +406,170 @@ task.spawn(function()
                 player.Character.Humanoid.WalkSpeed = Options.WalkSpeed.Value
             end
         end)
+    end
+end)
+
+-- ==================== AUTO COLLECT ====================
+
+local AutoCollectBox = Tabs.Main:AddRightGroupbox("Auto Collect")
+
+local playerBaseNumber = nil
+local collectCount = 0
+
+local function findPlayerBase()
+    local bases = workspace:FindFirstChild("GameAssets")
+    if not bases then return nil end
+    
+    bases = bases:FindFirstChild("Bases")
+    if not bases then return nil end
+    
+    for i = 1, 5 do
+        local base = bases:FindFirstChild(tostring(i))
+        if base then
+            local baseData = base:FindFirstChild("BaseData")
+            if baseData then
+                local owner = baseData:FindFirstChild("Owner")
+                if owner and owner:IsA("ObjectValue") then
+                    if owner.Value == player then
+                        return i
+                    end
+                end
+            end
+        end
+    end
+    
+    return nil
+end
+
+local function collectFromBase()
+    if not playerBaseNumber then
+        playerBaseNumber = findPlayerBase()
+        if not playerBaseNumber then
+            return false
+        end
+    end
+    
+    local base = workspace.GameAssets.Bases:FindFirstChild(tostring(playerBaseNumber))
+    if not base then return false end
+    
+    local entityLocations = base:FindFirstChild("EntityLocations")
+    if not entityLocations then return false end
+    
+    local char = player.Character
+    if not char then return false end
+    
+    local hrp = char:FindFirstChild("HumanoidRootPart")
+    if not hrp then return false end
+    
+    collectCount = 0
+    
+    -- Floor1: 1-10
+    local floor1 = entityLocations:FindFirstChild("Floor1")
+    if floor1 then
+        for i = 1, 10 do
+            local entity = floor1:FindFirstChild(tostring(i))
+            if entity then
+                local collectionZone = entity:FindFirstChild("CollectionZone")
+                if collectionZone then
+                    local hitbox = collectionZone:FindFirstChild("Hitbox")
+                    if hitbox then
+                        pcall(function()
+                            firetouchinterest(hrp, hitbox, 0)
+                            firetouchinterest(hrp, hitbox, 1)
+                            collectCount = collectCount + 1
+                        end)
+                        task.wait(0.1)
+                    end
+                end
+            end
+        end
+    end
+    
+    -- Floor2: 11-20
+    local floor2 = entityLocations:FindFirstChild("Floor2")
+    if floor2 then
+        for i = 11, 20 do
+            local entity = floor2:FindFirstChild(tostring(i))
+            if entity then
+                local collectionZone = entity:FindFirstChild("CollectionZone")
+                if collectionZone then
+                    local hitbox = collectionZone:FindFirstChild("Hitbox")
+                    if hitbox then
+                        pcall(function()
+                            firetouchinterest(hrp, hitbox, 0)
+                            firetouchinterest(hrp, hitbox, 1)
+                            collectCount = collectCount + 1
+                        end)
+                        task.wait(0.1)
+                    end
+                end
+            end
+        end
+    end
+    
+    -- Floor3: 21-30
+    local floor3 = entityLocations:FindFirstChild("Floor3")
+    if floor3 then
+        for i = 21, 30 do
+            local entity = floor3:FindFirstChild(tostring(i))
+            if entity then
+                local collectionZone = entity:FindFirstChild("CollectionZone")
+                if collectionZone then
+                    local hitbox = collectionZone:FindFirstChild("Hitbox")
+                    if hitbox then
+                        pcall(function()
+                            firetouchinterest(hrp, hitbox, 0)
+                            firetouchinterest(hrp, hitbox, 1)
+                            collectCount = collectCount + 1
+                        end)
+                        task.wait(0.1)
+                    end
+                end
+            end
+        end
+    end
+    
+    return true
+end
+
+local CollectStatusLabel = AutoCollectBox:AddLabel("Status: Idle")
+local CollectCountLabel = AutoCollectBox:AddLabel("Collected: 0")
+
+AutoCollectBox:AddToggle("AutoCollect", {
+    Text = "Enable Auto Collect",
+    Default = false,
+})
+
+task.spawn(function()
+    while task.wait(0.1) do
+        if Toggles.AutoCollect and Toggles.AutoCollect.Value then
+            if not playerBaseNumber then
+                CollectStatusLabel:SetText("Status: Finding base...")
+                playerBaseNumber = findPlayerBase()
+                
+                if playerBaseNumber then
+                    CollectStatusLabel:SetText("Status: Found Base " .. playerBaseNumber)
+                    Library:Notify("Found your base: Base " .. playerBaseNumber)
+                else
+                    CollectStatusLabel:SetText("Status: Base not found!")
+                    task.wait(5)
+                end
+            else
+                CollectStatusLabel:SetText("Status: Collecting...")
+                
+                if collectFromBase() then
+                    CollectCountLabel:SetText("Collected: " .. collectCount .. " items")
+                    CollectStatusLabel:SetText("Status: Cycle complete")
+                    task.wait(1)
+                else
+                    CollectStatusLabel:SetText("Status: Collection failed")
+                    task.wait(2)
+                end
+            end
+        else
+            CollectStatusLabel:SetText("Status: Idle")
+            playerBaseNumber = nil
+        end
     end
 end)
 
@@ -543,11 +704,60 @@ BalekBox:AddButton({
     Text = "Balek",
     Func = function()
         local success = pcall(function()
-            if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
-                player.Character.HumanoidRootPart.CFrame = CFrame.new(51, 2, 32)
-                Library:Notify("Balek umah!")
-            else
+            if not player.Character or not player.Character:FindFirstChild("HumanoidRootPart") then
                 Library:Notify("Character not found!")
+                return
+            end
+            
+            -- Find player's base first
+            local baseNum = findPlayerBase()
+            if not baseNum then
+                Library:Notify("Your base not found!")
+                return
+            end
+            
+            -- Get the base
+            local base = workspace.GameAssets.Bases:FindFirstChild(tostring(baseNum))
+            if not base then
+                Library:Notify("Base " .. baseNum .. " not found!")
+                return
+            end
+            
+            -- Navigate to Floor1["1"]
+            local entityLocations = base:FindFirstChild("EntityLocations")
+            if not entityLocations then
+                Library:Notify("EntityLocations not found!")
+                return
+            end
+            
+            local floor1 = entityLocations:FindFirstChild("Floor1")
+            if not floor1 then
+                Library:Notify("Floor1 not found!")
+                return
+            end
+            
+            local location1 = floor1:FindFirstChild("1")
+            if not location1 then
+                Library:Notify("Location 1 not found!")
+                return
+            end
+            
+            -- Get position from the location
+            local targetPos
+            if location1:IsA("Model") then
+                local primaryPart = location1.PrimaryPart or location1:FindFirstChildWhichIsA("BasePart")
+                if primaryPart then
+                    targetPos = primaryPart.Position
+                end
+            elseif location1:IsA("BasePart") then
+                targetPos = location1.Position
+            end
+            
+            if targetPos then
+                player.Character.HumanoidRootPart.CFrame = CFrame.new(targetPos + Vector3.new(0, 5, 0))
+                Library:Notify("Balek umah! (Base " .. baseNum .. ")")
+            else
+                Library:Notify("Could not find position!")
             end
         end)
         
@@ -555,7 +765,7 @@ BalekBox:AddButton({
             Library:Notify("Failed to teleport home!")
         end
     end,
-    Tooltip = "Teleport back home (51, 2, 32)",
+    Tooltip = "Teleport to your base (Floor1, position 1)",
 })
 
 -- ==================== UI SETTINGS ====================
