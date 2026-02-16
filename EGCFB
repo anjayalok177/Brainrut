@@ -1,0 +1,898 @@
+-- Yi Da Mu Sake Script
+
+-- ======================
+-- Intro animation
+-- ======================
+local function createIntroAnimation()
+    local TweenService = game:GetService("TweenService")
+    local SoundService = game:GetService("SoundService")
+    
+    local screenGui = Instance.new("ScreenGui")
+    screenGui.Name = "IntroScreen"
+    screenGui.ResetOnSpawn = false
+    screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+    screenGui.IgnoreGuiInset = true
+    screenGui.Parent = game:GetService("CoreGui")
+    
+    -- Create sounds
+    local laserSound = Instance.new("Sound")
+    laserSound.SoundId = "rbxassetid://9057675920"
+    laserSound.Volume = 0.5
+    laserSound.Parent = SoundService
+    
+    local explosionSound = Instance.new("Sound")
+    explosionSound.SoundId = "rbxassetid://112797079504478"
+    explosionSound.Volume = 0.6
+    explosionSound.Parent = SoundService
+    
+    -- Animated Background with gradient
+    local background = Instance.new("Frame")
+    background.Size = UDim2.new(1, 0, 1, 0)
+    background.Position = UDim2.new(0, 0, 0, 0)
+    background.BackgroundColor3 = Color3.fromRGB(20, 20, 30)
+    background.BorderSizePixel = 0
+    background.Parent = screenGui
+    
+    -- Gradient background
+    local gradient = Instance.new("UIGradient")
+    gradient.Color = ColorSequence.new{
+        ColorSequenceKeypoint.new(0, Color3.fromRGB(30, 20, 50)),
+        ColorSequenceKeypoint.new(0.5, Color3.fromRGB(15, 10, 30)),
+        ColorSequenceKeypoint.new(1, Color3.fromRGB(50, 30, 70))
+    }
+    gradient.Rotation = 45
+    gradient.Parent = background
+    
+    -- Animated particles in background
+    for i = 1, 20 do
+        local bgParticle = Instance.new("Frame")
+        bgParticle.Size = UDim2.new(0, math.random(3, 8), 0, math.random(3, 8))
+        bgParticle.Position = UDim2.new(math.random(), 0, math.random(), 0)
+        bgParticle.BackgroundColor3 = Color3.fromRGB(138, 43, 226)
+        bgParticle.BackgroundTransparency = math.random(50, 80) / 100
+        bgParticle.BorderSizePixel = 0
+        bgParticle.Parent = background
+        
+        local bgCorner = Instance.new("UICorner")
+        bgCorner.CornerRadius = UDim.new(1, 0)
+        bgCorner.Parent = bgParticle
+        
+        -- Float animation
+        task.spawn(function()
+            while bgParticle.Parent do
+                local floatAnim = TweenService:Create(
+                    bgParticle,
+                    TweenInfo.new(math.random(20, 40) / 10, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut),
+                    {
+                        Position = UDim2.new(
+                            bgParticle.Position.X.Scale + math.random(-10, 10) / 100,
+                            0,
+                            bgParticle.Position.Y.Scale + math.random(-10, 10) / 100,
+                            0
+                        )
+                    }
+                )
+                floatAnim:Play()
+                task.wait(math.random(20, 40) / 10)
+            end
+        end)
+    end
+    
+    -- Main Image Frame (Square) - Centered
+    local imageFrame = Instance.new("ImageLabel")
+    imageFrame.Size = UDim2.new(0, 220, 0, 220)
+    imageFrame.Position = UDim2.new(0.5, 0, 1.2, 0)
+    imageFrame.AnchorPoint = Vector2.new(0.5, 0.5)
+    imageFrame.BackgroundTransparency = 1
+    imageFrame.Image = "rbxassetid://110843044052526"
+    imageFrame.ScaleType = Enum.ScaleType.Fit
+    imageFrame.Parent = background
+    
+    -- Rounded corners
+    local corner = Instance.new("UICorner")
+    corner.CornerRadius = UDim.new(0, 25)
+    corner.Parent = imageFrame
+    
+    -- Glow effect around image
+    local glow = Instance.new("ImageLabel")
+    glow.Size = UDim2.new(1.3, 0, 1.3, 0)
+    glow.Position = UDim2.new(0.5, 0, 0.5, 0)
+    glow.AnchorPoint = Vector2.new(0.5, 0.5)
+    glow.BackgroundTransparency = 1
+    glow.Image = "rbxassetid://5028857084"
+    glow.ImageColor3 = Color3.fromRGB(138, 43, 226)
+    glow.ImageTransparency = 0.5
+    glow.Parent = imageFrame
+    
+    -- Title text - MOVED MUCH LOWER
+    local title = Instance.new("TextLabel")
+    title.Size = UDim2.new(0, 500, 0, 70)
+    title.Position = UDim2.new(0.5, 0, 0.78, 0)
+    title.AnchorPoint = Vector2.new(0.5, 0.5)
+    title.BackgroundTransparency = 1
+    title.Text = "YI DA MU SAKE"
+    title.TextColor3 = Color3.fromRGB(255, 255, 255)
+    title.TextSize = 48
+    title.Font = Enum.Font.GothamBold
+    title.TextTransparency = 1
+    title.TextStrokeTransparency = 0.5
+    title.TextStrokeColor3 = Color3.fromRGB(138, 43, 226)
+    title.Parent = background
+    
+    -- ANIMATION 1: Slide up from bottom with smooth BOUNCE effect (2.5 SECONDS)
+    local slideUp = TweenService:Create(
+        imageFrame,
+        TweenInfo.new(2.5, Enum.EasingStyle.Elastic, Enum.EasingDirection.Out),
+        {Position = UDim2.new(0.5, 0, 0.4, 0)}
+    )
+    
+    -- ANIMATION 2: Fade in text
+    local fadeInTitle = TweenService:Create(
+        title,
+        TweenInfo.new(0.6, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+        {TextTransparency = 0}
+    )
+    
+    -- Start animations + LASER SOUND
+    laserSound:Play()
+    slideUp:Play()
+    task.wait(1.2)
+    fadeInTitle:Play()
+    
+    -- Wait for bounce to settle completely
+    task.wait(2.0)
+    
+    -- Calculate distance from center for OUTSIDE-IN shatter
+    local function getDistanceFromCenter(row, col, gridSize)
+        local centerRow = (gridSize - 1) / 2
+        local centerCol = (gridSize - 1) / 2
+        local distRow = row - centerRow
+        local distCol = col - centerCol
+        return math.sqrt(distRow * distRow + distCol * distCol)
+    end
+    
+    -- SHATTER FROM OUTSIDE TO INSIDE
+    local function createShatteredPieces()
+        local pieces = {}
+        local gridSize = 6
+        local imageSize = 220
+        local pieceSize = imageSize / gridSize
+        local originalImageSize = 420
+        
+        local piecesWithDistance = {}
+        
+        for row = 0, gridSize - 1 do
+            for col = 0, gridSize - 1 do
+                local piece = Instance.new("ImageLabel")
+                
+                piece.Size = UDim2.new(0, pieceSize, 0, pieceSize)
+                piece.Position = UDim2.new(
+                    0.5, (col * pieceSize) - (imageSize / 2),
+                    0.4, (row * pieceSize) - (imageSize / 2)
+                )
+                piece.AnchorPoint = Vector2.new(0, 0)
+                
+                piece.BackgroundTransparency = 1
+                piece.Image = "rbxassetid://110843044052526"
+                piece.ScaleType = Enum.ScaleType.Crop
+                piece.ZIndex = 5
+                
+                local rectWidth = originalImageSize / gridSize
+                local rectHeight = originalImageSize / gridSize
+                
+                piece.ImageRectSize = Vector2.new(rectWidth, rectHeight)
+                piece.ImageRectOffset = Vector2.new(col * rectWidth, row * rectHeight)
+                
+                piece.Parent = background
+                
+                local pCorner = Instance.new("UICorner")
+                pCorner.CornerRadius = UDim.new(0, math.random(2, 6))
+                pCorner.Parent = piece
+                
+                local distance = getDistanceFromCenter(row, col, gridSize)
+                
+                table.insert(piecesWithDistance, {
+                    piece = piece,
+                    distance = distance
+                })
+            end
+        end
+        
+        table.sort(piecesWithDistance, function(a, b)
+            return a.distance > b.distance
+        end)
+        
+        return piecesWithDistance
+    end
+    
+    local function createTotemParticles()
+        local particles = {}
+        
+        for i = 1, 45 do
+            local particle = Instance.new("Frame")
+            local size = math.random(10, 22)
+            particle.Size = UDim2.new(0, size, 0, size)
+            particle.Position = UDim2.new(0.5, 0, 0.4, 0)
+            particle.AnchorPoint = Vector2.new(0.5, 0.5)
+            
+            local colorChoice = math.random(1, 4)
+            if colorChoice == 1 then
+                particle.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+            elseif colorChoice == 2 then
+                particle.BackgroundColor3 = Color3.fromRGB(255, 255, 120)
+            elseif colorChoice == 3 then
+                particle.BackgroundColor3 = Color3.fromRGB(255, 215, 0)
+            else
+                particle.BackgroundColor3 = Color3.fromRGB(138, 43, 226)
+            end
+            
+            particle.BorderSizePixel = 0
+            particle.ZIndex = 6
+            particle.Parent = background
+            
+            local pCorner = Instance.new("UICorner")
+            pCorner.CornerRadius = UDim.new(0.35, 0)
+            pCorner.Parent = particle
+            
+            table.insert(particles, particle)
+        end
+        
+        return particles
+    end
+    
+    local flash = Instance.new("Frame")
+    flash.Size = UDim2.new(1, 0, 1, 0)
+    flash.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    flash.BorderSizePixel = 0
+    flash.BackgroundTransparency = 1
+    flash.ZIndex = 10
+    flash.Parent = background
+    
+    local flashIn = TweenService:Create(
+        flash,
+        TweenInfo.new(0.08, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+        {BackgroundTransparency = 0.1}
+    )
+    
+    local flashOut = TweenService:Create(
+        flash,
+        TweenInfo.new(0.6, Enum.EasingStyle.Quad, Enum.EasingDirection.In),
+        {BackgroundTransparency = 1}
+    )
+    
+    imageFrame.Visible = false
+    glow.Visible = false
+    
+    explosionSound:Play()
+    
+    flashIn:Play()
+    flashIn.Completed:Connect(function()
+        flashOut:Play()
+    end)
+    
+    local shatteredPieces = createShatteredPieces()
+    local totemParts = createTotemParticles()
+    
+    for i, pieceData in ipairs(shatteredPieces) do
+        local piece = pieceData.piece
+        
+        local angle = math.random(0, 360)
+        local rad = math.rad(angle)
+        local distance = math.random(400, 800)
+        
+        local targetX = math.cos(rad) * distance
+        local targetY = math.sin(rad) * distance + math.random(100, 300)
+        
+        local scatter = TweenService:Create(
+            piece,
+            TweenInfo.new(
+                2.0,
+                Enum.EasingStyle.Quad,
+                Enum.EasingDirection.Out
+            ),
+            {
+                Position = UDim2.new(piece.Position.X.Scale, piece.Position.X.Offset + targetX, 
+                                   piece.Position.Y.Scale, piece.Position.Y.Offset + targetY),
+                ImageTransparency = 1,
+                Rotation = math.random(-450, 450),
+                Size = UDim2.new(0, piece.Size.X.Offset * 0.3, 0, piece.Size.Y.Offset * 0.3)
+            }
+        )
+        
+        scatter:Play()
+        
+        if i <= #totemParts then
+            local totemParticle = totemParts[i]
+            
+            local tAngle = math.random(0, 360)
+            local tRad = math.rad(tAngle)
+            local tDistance = math.random(350, 750)
+            
+            local tTargetX = math.cos(tRad) * tDistance
+            local tTargetY = math.sin(tRad) * tDistance + math.random(120, 280)
+            
+            local totemScatter = TweenService:Create(
+                totemParticle,
+                TweenInfo.new(
+                    2.0,
+                    Enum.EasingStyle.Quad,
+                    Enum.EasingDirection.Out
+                ),
+                {
+                    Position = UDim2.new(0.5, tTargetX, 0.4, tTargetY),
+                    BackgroundTransparency = 1,
+                    Rotation = math.random(-280, 280),
+                    Size = UDim2.new(0, totemParticle.Size.X.Offset * 0.25, 0, totemParticle.Size.Y.Offset * 0.25)
+                }
+            )
+            
+            totemScatter:Play()
+        end
+        
+        task.wait(0.004)
+    end
+    
+    task.wait(1.5)
+    
+    local fadeOutTitle = TweenService:Create(title, TweenInfo.new(0.5), {TextTransparency = 1})
+    local fadeOutBg = TweenService:Create(background, TweenInfo.new(0.5), {BackgroundTransparency = 1})
+    
+    fadeOutTitle:Play()
+    fadeOutBg:Play()
+    
+    task.wait(0.6)
+    
+    laserSound:Destroy()
+    explosionSound:Destroy()
+    
+    screenGui:Destroy()
+end
+
+createIntroAnimation()
+
+local repo = "https://raw.githubusercontent.com/deividcomsono/Obsidian/main/"
+local Library = loadstring(game:HttpGet(repo .. "Library.lua"))()
+local ThemeManager = loadstring(game:HttpGet(repo .. "addons/ThemeManager.lua"))()
+local SaveManager = loadstring(game:HttpGet(repo .. "addons/SaveManager.lua"))()
+
+local Options = Library.Options
+local Toggles = Library.Toggles
+
+Library.ForceCheckbox = false
+Library.ShowToggleFrameInKeybinds = true
+
+local Window = Library:CreateWindow({
+    Title = "Yi Da Mu Sake",
+    Footer = "version: EGCFB",
+    Icon = 95816097006870,
+    NotifySide = "Right",
+    ShowCustomCursor = true,
+})
+
+local Tabs = {
+    Main = Window:AddTab("Main", "home"),
+    Teleport = Window:AddTab("Teleport", "map-pin"),
+    ["UI Settings"] = Window:AddTab("UI Settings", "settings"),
+}
+
+-- ============================================
+-- SERVICES
+-- ============================================
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
+local ProximityPromptService = game:GetService("ProximityPromptService")
+local player = Players.LocalPlayer
+
+-- ============================================
+-- MAIN TAB - AUTO COLLECT BUBBLE
+-- ============================================
+local AutoCollectGroup = Tabs.Main:AddLeftGroupbox("Auto Collect", "zap")
+
+-- AUTO COLLECT BUBBLE
+local autoCollectActive = false
+local autoCollectLoop = nil
+
+local function touchAllCurrency()
+    local currencyFolder = workspace:FindFirstChild("CurrencyFolder")
+    if not currencyFolder then return end
+    
+    local character = player.Character
+    if not character then return end
+    
+    local humanoidRootPart = character:FindFirstChild("HumanoidRootPart")
+    if not humanoidRootPart then return end
+    
+    for _, child in ipairs(currencyFolder:GetChildren()) do
+        local touchInterest = child:FindFirstChild("TouchInterest", true)
+        if touchInterest then
+            firetouchinterest(humanoidRootPart, touchInterest.Parent, 0)
+            firetouchinterest(humanoidRootPart, touchInterest.Parent, 1)
+        end
+    end
+end
+
+AutoCollectGroup:AddToggle("AutoCollectBubble", {
+    Text = "Auto Collect Bubble",
+    Tooltip = "Otomatis mengumpulkan bubble dari CurrencyFolder",
+    Default = false,
+    Callback = function(value)
+        autoCollectActive = value
+        
+        if value then
+            Library:Notify("Auto Collect Bubble: ON", 1)
+            
+            autoCollectLoop = RunService.Heartbeat:Connect(function()
+                touchAllCurrency()
+            end)
+        else
+            Library:Notify("Auto Collect Bubble: OFF", 1)
+            
+            if autoCollectLoop then
+                autoCollectLoop:Disconnect()
+                autoCollectLoop = nil
+            end
+        end
+    end
+})
+
+-- ============================================
+-- MAIN TAB - SPEED ADJUST (1-1000)
+-- ============================================
+local SpeedGroup = Tabs.Main:AddLeftGroupbox("Speed Adjust", "zap")
+
+local speedValue = 16 -- Default walk speed
+local speedConnection = nil
+
+-- Function to apply speed
+local function applySpeed(speed)
+    local character = player.Character
+    if not character then return end
+    
+    local humanoid = character:FindFirstChildOfClass("Humanoid")
+    if humanoid then
+        humanoid.WalkSpeed = speed
+    end
+end
+
+-- Speed slider
+SpeedGroup:AddSlider("SpeedSlider", {
+    Text = "Walk Speed",
+    Tooltip = "Atur kecepatan jalan (1-1000)",
+    Default = 16,
+    Min = 1,
+    Max = 1000,
+    Rounding = 0,
+    Compact = false,
+    Callback = function(value)
+        speedValue = value
+        if speedConnection then
+            applySpeed(value)
+        end
+    end
+})
+
+-- Toggle untuk speed
+SpeedGroup:AddToggle("SpeedToggle", {
+    Text = "Enable Speed",
+    Tooltip = "Aktifkan speed adjust",
+    Default = false,
+    Callback = function(value)
+        if value then
+            Library:Notify("Speed: ON (" .. speedValue .. ")", 1)
+            
+            -- Apply speed setiap kali karakter berganti
+            speedConnection = player.CharacterAdded:Connect(function(character)
+                task.wait(0.5)
+                local humanoid = character:FindFirstChildOfClass("Humanoid")
+                if humanoid then
+                    humanoid.WalkSpeed = speedValue
+                end
+            end)
+            
+            -- Apply ke karakter sekarang
+            applySpeed(speedValue)
+        else
+            Library:Notify("Speed: OFF", 1)
+            
+            if speedConnection then
+                speedConnection:Disconnect()
+                speedConnection = nil
+            end
+            
+            -- Kembalikan ke speed normal
+            applySpeed(16)
+        end
+    end
+})
+
+-- ============================================
+-- MAIN TAB - ANTI CRUSHER (WORKING VERSION)
+-- ============================================
+local AntiCrusherGroup = Tabs.Main:AddRightGroupbox("Anti Crusher", "shield")
+
+local antiCrusherActive = false
+local antiCrusherLoop = nil
+local crushers = workspace:FindFirstChild("Crushers")
+
+if not crushers then
+    warn("❌ Folder Crushers tidak ditemukan!")
+end
+
+-- Fungsi untuk mendapatkan semua kill parts dari crushers
+local function getKillParts()
+    local killParts = {}
+    
+    if crushers then
+        for _, crusher in ipairs(crushers:GetChildren()) do
+            -- Cari KillPart di setiap crusher
+            local killPart = crusher:FindFirstChild("KillPart")
+            if killPart and killPart:IsA("BasePart") then
+                table.insert(killParts, killPart)
+                
+                -- Cari juga TouchInterest di KillPart
+                for _, obj in ipairs(killPart:GetChildren()) do
+                    if obj:IsA("TouchTransmitter") or obj:IsA("TouchInterest") then
+                        table.insert(killParts, {
+                            Part = killPart,
+                            TouchInterest = obj
+                        })
+                    end
+                end
+            end
+        end
+    end
+    
+    return killParts
+end
+
+-- Fungsi untuk melindungi karakter
+local function protectCharacter(character)
+    if not character then return end
+    
+    -- Kumpulkan semua parts yang perlu dilindungi
+    local partsToProtect = {}
+    
+    for _, part in ipairs(character:GetDescendants()) do
+        if part:IsA("BasePart") then
+            table.insert(partsToProtect, part)
+        end
+    end
+    
+    -- Hapus semua TouchInterest dari parts karakter (jika ada)
+    for _, part in ipairs(partsToProtect) do
+        for _, obj in ipairs(part:GetChildren()) do
+            if obj:IsA("TouchTransmitter") or obj:IsA("TouchInterest") then
+                obj:Destroy()
+            end
+        end
+    end
+    
+    return partsToProtect
+end
+
+-- Fungsi utama anti touch
+local function antiTouch()
+    local character = player.Character
+    if not character then return end
+    
+    local humanoid = character:FindFirstChild("Humanoid")
+    if not humanoid or humanoid.Health <= 0 then return end
+    
+    local rootPart = character:FindFirstChild("HumanoidRootPart")
+    if not rootPart then return end
+    
+    -- Dapatkan semua kill parts
+    local killParts = getKillParts()
+    
+    -- Cek apakah karakter menyentuh kill part
+    for _, killPart in ipairs(killParts) do
+        local part = killPart.Part or killPart
+        if part and part:IsA("BasePart") then
+            -- Cek jarak antara karakter dan kill part
+            local distance = (rootPart.Position - part.Position).Magnitude
+            
+            -- Jika sangat dekat (kemungkinan menyentuh)
+            if distance < 8 then
+                -- Method 1: Pindahkan karakter sedikit
+                rootPart.CFrame = rootPart.CFrame + Vector3.new(0, 5, 0)
+                
+                -- Method 2: Nonaktifkan kill part sementara
+                if part.Transparency < 1 then
+                    -- Hapus TouchInterest dari kill part
+                    for _, obj in ipairs(part:GetChildren()) do
+                        if obj:IsA("TouchTransmitter") or obj:IsA("TouchInterest") then
+                            obj:Destroy()
+                        end
+                    end
+                end
+            end
+        end
+    end
+    
+    -- Pastikan health tidak berkurang drastis
+    if humanoid.Health < 100 then
+        humanoid.Health = 100
+    end
+end
+
+-- Method alternatif: Hook TouchInterest
+local function hookTouchInterests()
+    -- Cari semua TouchInterest di game dan nonaktifkan
+    for _, obj in ipairs(workspace:GetDescendants()) do
+        if obj:IsA("TouchTransmitter") or obj:IsA("TouchInterest") then
+            -- Cek apakah ini bagian dari crushers
+            local parent = obj.Parent
+            while parent do
+                if parent.Name == "Crushers" or parent.Name == "KillPart" then
+                    -- Nonaktifkan dengan menghapus
+                    obj:Destroy()
+                    break
+                end
+                parent = parent.Parent
+            end
+        end
+    end
+end
+
+-- Loop utama
+local function startAntiCrusher()
+    if antiCrusherLoop then
+        antiCrusherLoop:Disconnect()
+    end
+    
+    -- Method 1: Periodic check
+    antiCrusherLoop = RunService.Heartbeat:Connect(function()
+        if antiCrusherActive then
+            antiTouch()
+        end
+    end)
+    
+    -- Method 2: Hook touch events
+    hookTouchInterests()
+    
+    -- Method 3: Protect character saat respawn
+    player.CharacterAdded:Connect(function(newChar)
+        task.wait(1)
+        if antiCrusherActive then
+            protectCharacter(newChar)
+        end
+    end)
+end
+
+local function stopAntiCrusher()
+    if antiCrusherLoop then
+        antiCrusherLoop:Disconnect()
+        antiCrusherLoop = nil
+    end
+end
+
+-- Status label untuk anti crusher
+local statusLabel = AntiCrusherGroup:AddLabel("Status: Nonaktif")
+
+AntiCrusherGroup:AddToggle("AntiCrusher", {
+    Text = "Anti Crusher",
+    Tooltip = "Melindungi karakter dari crusher (KillPart.TouchInterest)",
+    Default = false,
+    Callback = function(value)
+        antiCrusherActive = value
+        
+        if value then
+            statusLabel:SetText("Status: Aktif 🟢")
+            Library:Notify("Anti Crusher: AKTIF", 2)
+            startAntiCrusher()
+            
+            -- Proteksi karakter saat ini
+            if player.Character then
+                protectCharacter(player.Character)
+            end
+            
+            print("Anti Crusher AKTIF - Anda aman dari touch interest!")
+        else
+            statusLabel:SetText("Status: Nonaktif 🔴")
+            Library:Notify("Anti Crusher: NONAKTIF", 2)
+            stopAntiCrusher()
+            print("⚠Anti Crusher NONAKTIF")
+        end
+    end
+})
+
+-- ============================================
+-- MAIN TAB - INSTANT INTERACT
+-- ============================================
+local InstantInteractGroup = Tabs.Main:AddRightGroupbox("Instant Interact", "hand")
+
+local instantInteractEnabled = false
+
+-- Koneksi untuk instant interact
+local instantInteractConnection = nil
+
+-- Fungsi untuk memulai instant interact
+local function startInstantInteract()
+    if instantInteractConnection then
+        instantInteractConnection:Disconnect()
+    end
+    
+    instantInteractConnection = ProximityPromptService.PromptButtonHoldBegan:Connect(function(prompt, promptPlayer)
+        if instantInteractEnabled and promptPlayer == player then
+            fireproximityprompt(prompt)
+        end
+    end)
+end
+
+local function stopInstantInteract()
+    if instantInteractConnection then
+        instantInteractConnection:Disconnect()
+        instantInteractConnection = nil
+    end
+end
+
+InstantInteractGroup:AddToggle("InstantInteract", {
+    Text = "Instant Interact",
+    Tooltip = "Langsung trigger proximity prompt tanpa menahan",
+    Default = false,
+    Callback = function(value)
+        instantInteractEnabled = value
+        
+        if value then
+            Library:Notify("Instant Interact: ON", 1)
+            startInstantInteract()
+        else
+            Library:Notify("Instant Interact: OFF", 1)
+            stopInstantInteract()
+        end
+    end
+})
+
+-- ============================================
+-- TELEPORT TAB
+-- ============================================
+local TeleportGroup = Tabs.Teleport:AddLeftGroupbox("Safe Zone Teleport", "map-pin")
+
+-- Data safe zone (z diubah jadi 0 semua)
+local safeZones = {
+    {name = "Safe Zone 1", x = 68, y = 53, z = 0},
+    {name = "Safe Zone 2", x = -22, y = 47, z = 0},
+    {name = "Safe Zone 3", x = -96, y = 47, z = 0},
+    {name = "Safe Zone 4", x = -192, y = 47, z = 0},
+    {name = "Safe Zone 5", x = -299, y = 47, z = 0},
+    {name = "Safe Zone 6", x = -477, y = 47, z = 0},
+    {name = "Safe Zone 7", x = -725, y = 47, z = 0},
+    {name = "Safe Zone 8", x = -1044, y = 47, z = 0},
+    {name = "Safe Zone 9", x = -1571, y = 47, z = 0},
+    {name = "Safe Zone 10", x = -2310, y = 47, z = 0},
+    {name = "Safe Zone 11", x = -3208, y = 47, z = 0},
+    {name = "Safe Zone 12", x = -4225, y = 47, z = 0},
+}
+
+local currentZoneIndex = 1
+
+-- Fungsi untuk teleport ke koordinat
+local function teleportToPosition(x, y, z)
+    local character = player.Character
+    if not character then 
+        Library:Notify("Character tidak ditemukan!", 2)
+        return 
+    end
+    
+    local hrp = character:FindFirstChild("HumanoidRootPart")
+    if not hrp then 
+        Library:Notify("HumanoidRootPart tidak ditemukan!", 2)
+        return 
+    end
+    
+    hrp.CFrame = CFrame.new(x, y, z)
+    Library:Notify("Teleport ke " .. x .. ", " .. y .. ", " .. z, 1)
+end
+
+-- Fungsi untuk mendeteksi safe zone terdekat
+local function detectCurrentZone()
+    local character = player.Character
+    if not character then return nil end
+    
+    local hrp = character:FindFirstChild("HumanoidRootPart")
+    if not hrp then return nil end
+    
+    local playerPos = hrp.Position
+    local nearestIndex = nil
+    local nearestDistance = 25 -- Radius deteksi 25 stud
+    
+    for i, zone in ipairs(safeZones) do
+        local zonePos = Vector3.new(zone.x, zone.y, zone.z)
+        local distance = (zonePos - playerPos).Magnitude
+        
+        if distance <= nearestDistance then
+            nearestDistance = distance
+            nearestIndex = i
+        end
+    end
+    
+    return nearestIndex
+end
+
+-- Update current zone setiap detik
+task.spawn(function()
+    while true do
+        task.wait(1)
+        local detected = detectCurrentZone()
+        if detected then
+            currentZoneIndex = detected
+            zoneLabel:SetText("📍 Posisi: " .. safeZones[currentZoneIndex].name)
+        end
+    end
+end)
+
+-- Display current zone
+local zoneLabel = TeleportGroup:AddLabel("📍 Posisi: Mendeteksi...")
+
+TeleportGroup:AddDivider()
+
+-- Tombol UP (Next Zone)
+TeleportGroup:AddButton({
+    Text = "⬆️ UP (Next Zone)",
+    Func = function()
+        if currentZoneIndex < #safeZones then
+            currentZoneIndex = currentZoneIndex + 1
+            local zone = safeZones[currentZoneIndex]
+            teleportToPosition(zone.x, zone.y, zone.z)
+            zoneLabel:SetText("📍 Posisi: " .. zone.name)
+        else
+            Library:Notify("Sudah di safe zone terakhir!", 2)
+        end
+    end,
+    Tooltip = "Teleport ke safe zone berikutnya"
+})
+
+-- Tombol DOWN (Previous Zone)
+TeleportGroup:AddButton({
+    Text = "⬇️ DOWN (Previous Zone)",
+    Func = function()
+        if currentZoneIndex > 1 then
+            currentZoneIndex = currentZoneIndex - 1
+            local zone = safeZones[currentZoneIndex]
+            teleportToPosition(zone.x, zone.y, zone.z)
+            zoneLabel:SetText("📍 Posisi: " .. zone.name)
+        else
+            Library:Notify("Sudah di safe zone pertama!", 2)
+        end
+    end,
+    Tooltip = "Teleport ke safe zone sebelumnya"
+})
+
+-- ============================================
+-- TELEPORT TAB - BALEK UMAH (TERPISAH)
+-- ============================================
+local HomeGroup = Tabs.Teleport:AddRightGroupbox("Balek Umah", "home")
+
+-- Tombol Balek Umah (Safe Zone 1)
+HomeGroup:AddButton({
+    Text = "🏠 BALEK UMAH",
+    Func = function()
+        currentZoneIndex = 1
+        teleportToPosition(68, 53, 0)
+        zoneLabel:SetText("📍 Posisi: Safe Zone 1")
+        Library:Notify("Balek umah...", 2)
+    end,
+    Tooltip = "Teleport kembali ke base (Safe Zone 1)"
+})
+
+-- ============================================
+-- UI SETTINGS
+-- ============================================
+ThemeManager:SetLibrary(Library)
+SaveManager:SetLibrary(Library)
+
+SaveManager:IgnoreThemeSettings()
+SaveManager:SetIgnoreIndexes({ "MenuKeybind" })
+
+ThemeManager:SetFolder("YiDaMuSake")
+SaveManager:SetFolder("YiDaMuSake/configs")
+
+SaveManager:BuildConfigSection(Tabs["UI Settings"])
+ThemeManager:ApplyToTab(Tabs["UI Settings"])
+
+SaveManager:LoadAutoloadConfig()
+
+-- Notification
+Library:Notify("Yi Da Mu Sake loaded successfully!", 3)
+print("Yi Da Mu Sake Script Loaded!")
